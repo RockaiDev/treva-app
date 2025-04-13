@@ -1,0 +1,79 @@
+{
+  "expo": {
+    "name": "Treva",
+    "slug": "treva-online-academy",
+    "version": "2.5.1",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "scheme": "treva",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hassan236.trevaappedu",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "This app uses the Face ID and Touch ID to verify user's identity and authenticate the user.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your photos to let users add them images.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "versionCode": 47,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#17829c"
+      },
+      "package": "com.hassan236.trevaappedu"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enablePngCrunchInReleaseBuilds": false,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
+      ],
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-video",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "2206992d-d5d6-4836-a446-3eb154370787"
+      },
+      "API_URL": "https://server.trevaapplication.com/api/v1"
+    },
+    "owner": "hassan236-org"
+  }
+}
