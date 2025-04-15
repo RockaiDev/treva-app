@@ -58,6 +58,13 @@ export default function Layout() {
       <Stack.Screen name='About'
         options={{
           title: 'عن المنصة'
+          , headerTitleAlign: 'center',
+        }}
+      />
+      <Stack.Screen name='paidCourses'
+        options={{
+          title: 'الدورات المدفوعة',
+          headerTitleAlign: 'center',
         }}
       />
     </Stack>

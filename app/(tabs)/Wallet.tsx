@@ -40,71 +40,82 @@ export default function Wallet() {
     }
 
     const ChargePoints = () => {
-      if (user.type === 'TrevaGo') {
-        Alert.alert("الاشتراك الشهري", 'هل تريد الاشتراك الشهري لطلاب المعهد فقط ب 400 جنيه', [
-          {
-            text: 'نعم',
-            onPress: async () => {
-              if (user.points >= 400) {
-                const bill = {
-                  method: 'الاشتراك الشهري',
-                  cost: 400,
-                  date: new Date().getTime(),
-                  code: `${new Date().getTime()}`
-                }
-                user.bills.push(bill)
-                user.logs.push(`تم دفع ${bill.cost} جنيه للاشتراك الشهري`)
-                user.points -= 400
-                user.type = 'TrevaIn'
-                setUser(user)
-                await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, user).then(res => {
-                  AsyncStorage.setItem('user', JSON.stringify(user))
-                  Alert.alert('تم', 'تم الاشتراك بنجاح')
-                })
-              } else {
-                Alert.alert('خطأ', 'رصيدك غير كافي')
-              }
-            }
-          },
-          {
-            text: 'لا',
-            onPress: () => { }
-          }
-        ])
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-      } else {
-        Alert.alert("الاشتراك الشهري", 'هل تريد الاشتراك الشهري ب 400 جنيه', [
-          {
-            text: 'نعم',
-            onPress: async () => {
-              if (user.points >= 400) {
-                const bill = {
-                  method: 'الاشتراك الشهري',
-                  cost: 400,
-                  date: new Date().getTime(),
-                  code: `${new Date().getTime()}`
-                }
-                user.bills.push(bill)
-                user.logs.push(`تم دفع ${bill.cost} جنيه للاشتراك الشهري`)
-                user.points -= 400
-                setUser(user)
-                console.log(user)
-                await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, user).then(res => {
-                  AsyncStorage.setItem('user', JSON.stringify(user))
-                  Alert.alert('تم', 'تم الاشتراك بنجاح')
-                })
-              } else {
-                Alert.alert('خطأ', 'رصيدك غير كافي')
-              }
-            }
-          },
-          {
-            text: 'لا',
-            onPress: () => { }
-          }
-        ])
+      const hasSubscribedBefore = user.bills.some(bill => 
+      bill.method === 'الاشتراك الشهري' && new Date(bill.date) > oneMonthAgo
+      );
+
+      if (hasSubscribedBefore) {
+      Alert.alert('خطأ', 'لقد اشتركت بالفعل في الاشتراك الشهري خلال الشهر الحالي. لا يمكنك الاشتراك مرة أخرى حتى مرور شهر كامل.');
+      return;
       }
-    }
+
+      if (user.type === 'TrevaGo') {
+      Alert.alert("الاشتراك الشهري", 'هل تريد الاشتراك الشهري لطلاب المعهد فقط ب 400 جنيه', [
+        {
+        text: 'نعم',
+        onPress: async () => {
+          if (user.points >= 400) {
+          const bill = {
+            method: 'الاشتراك الشهري',
+            cost: 400,
+            date: new Date().getTime(),
+            code: `${new Date().getTime()}`
+          };
+          user.bills.push(bill);
+          user.logs.push(`تم دفع ${bill.cost} جنيه للاشتراك الشهري`);
+          user.points -= 400;
+          user.type = 'TrevaIn';
+          setUser(user);
+          await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, user).then(res => {
+            AsyncStorage.setItem('user', JSON.stringify(user));
+            Alert.alert('تم', 'تم الاشتراك بنجاح');
+          });
+          } else {
+          Alert.alert('خطأ', 'رصيدك غير كافي');
+          }
+        }
+        },
+        {
+        text: 'لا',
+        onPress: () => { }
+        }
+      ]);
+      } else {
+      Alert.alert("الاشتراك الشهري", 'هل تريد الاشتراك الشهري ب 400 جنيه', [
+        {
+        text: 'نعم',
+        onPress: async () => {
+          if (user.points >= 400) {
+          const bill = {
+            method: 'الاشتراك الشهري',
+            cost: 400,
+            date: new Date().getTime(),
+            code: `${new Date().getTime()}`
+          };
+          user.bills.push(bill);
+          user.logs.push(`تم دفع ${bill.cost} جنيه للاشتراك الشهري`);
+          user.points -= 400;
+          setUser(user);
+          console.log(user);
+          await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, user).then(res => {
+            AsyncStorage.setItem('user', JSON.stringify(user));
+            Alert.alert('تم', 'تم الاشتراك بنجاح');
+          });
+          } else {
+          Alert.alert('خطأ', 'رصيدك غير كافي');
+          }
+        }
+        },
+        {
+        text: 'لا',
+        onPress: () => { }
+        }
+      ]);
+      }
+    };
 
     return (
       <>

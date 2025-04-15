@@ -144,12 +144,12 @@ export default function Profile() {
                         <MaterialIcons name="keyboard-arrow-left" size={24} color={Colors.textColor} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.buttonProfile} onPress={() => router.navigate('/(tabs)/Courses')}>
+                    <TouchableOpacity style={styles.buttonProfile} onPress={() => router.navigate("/(subPages)/paidCourses")}>
                         <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                             <View style={styles.IconForPage}>
                                 <AntDesign name="book" size={18} color={Colors.calmWhite} />
                             </View>
-                            <Text style={styles.textBtnProfile}>دوراتي</Text>
+                            <Text style={styles.textBtnProfile}>دروس قمت بشرائها</Text>
                         </View>
                         <MaterialIcons name="keyboard-arrow-left" size={24} color={Colors.textColor} />
                     </TouchableOpacity>

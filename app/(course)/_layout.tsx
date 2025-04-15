@@ -4,7 +4,11 @@ import { Stack } from 'expo-router'
 
 export default function Layout() {
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerTitleAlign: 'center',
+      }}
+    >
       <Stack.Screen name='[id]' />
       <Stack.Screen name='Exam' />
       <Stack.Screen name='examVideo' />
