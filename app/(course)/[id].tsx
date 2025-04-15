@@ -21,7 +21,8 @@ export default function Course() {
 
   const MonthlyPaymentBills = userData.bills.filter((bill: any) => {
     const billDate = typeof (bill.date) === 'string' ? null : bill
-    return billDate
+    const monthlypaymentMethod = bill.method = 'الاشتراك الشهري'
+    return billDate && monthlypaymentMethod
   })
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function Course() {
       if (userData.type === 'TrevaIn') {
         if (MonthlyPaymentBills[MonthlyPaymentBills.length - 1]?.date !== undefined) {
           const lastBill = MonthlyPaymentBills[MonthlyPaymentBills.length - 1]
-          if (new Date(lastBill.date).getTime() + (30 * 24 * 60 * 60 * 1000) > Date.now() && lastBill.cost >= 400) {
+          if ((new Date(lastBill.date).getTime() + (30 * 24 * 60 * 60 * 1000)) > Date.now()) {
             setHasLesson(true)
           } else {
             Alert.alert('يجب عليك دفع الاشتراك الشهري لطلاب المعهد', ' قيمة الاشتراك 400 جنية مصري شهرياً', [

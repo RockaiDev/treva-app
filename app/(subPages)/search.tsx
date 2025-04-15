@@ -4,10 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Colors } from '@/constants/Colors'
 import { FontAwesome } from '@expo/vector-icons'
 import { Fonts } from '@/constants/Fonts'
-import { useDataContext, user } from '@/components/context/DataContext'
+import { lesson, useDataContext, user } from '@/components/context/DataContext'
 import { router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ConstantStyles } from '@/constants/constantStyles'
+import Fuse from 'fuse.js';
 
 export default function Search() {
     const [search, setSearch] = useState('')
@@ -32,6 +33,50 @@ export default function Search() {
         fetchUser()
     }, [])
 
+    // Arabic normalization helper
+    const normalizeArabic = (text: string): string => {
+        return text
+            .replace(/[\u064B-\u065F]/g, '') // Remove tashkeel
+            .replace(/أ|إ|آ/g, 'ا')
+            .replace(/ى/g, 'ي')
+            .replace(/ؤ/g, 'و')
+            .replace(/ئ/g, 'ي')
+            .replace(/ة/g, 'ه')
+            .toLocaleLowerCase();
+    };
+
+    const filterLessons = (
+        lessons: lesson[] | undefined,
+        user: user | undefined,
+        search: string | undefined
+    ) => {
+        if (!lessons || !user) return [];
+
+        // First: Filter by user's grade
+        const filteredByGrade = lessons.filter((lesson: lesson) => lesson.grade === user.grade);
+
+        // If no search term, return grade-filtered list
+        if (!search?.trim()) return filteredByGrade;
+
+        // Fuse.js config
+        const fuse = new Fuse(filteredByGrade, {
+            keys: ['title', 'subject', 'teacher'],
+            threshold: 0.4,
+            getFn: (obj, path: string | string[]) => {
+            const value = Array.isArray(path) 
+                ? path.reduce((acc, key) => acc && (acc as Record<string, any>)[key], obj) 
+                : (obj as Record<string, any>)[path];
+            return typeof value === 'string' ? normalizeArabic(value) : '';
+            },
+        });
+
+        const normalizedSearch = normalizeArabic(search);
+        const results = fuse.search(normalizedSearch);
+        return results.map(result => result.item);
+    };
+
+    const results = filterLessons(lessons ?? undefined, user, search)
+
     const searchLessons = lessons?.filter(lesson => {
         const matchedGradeOfUser = user?.grade === lesson.grade
         const matchedLessonTitle = !search || lesson.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())
@@ -40,6 +85,7 @@ export default function Search() {
         return matchedGradeOfUser && (matchedLessonTitle || matchedSubject || matchedteacher)
     })
 
+    
 
     const subjects = [
         { image: require('../../assets/images/subjects/arabic.png'), name: 'اللغة العربية' },
@@ -82,7 +128,7 @@ export default function Search() {
 
             <ScrollView style={ConstantStyles.page}>
                 {
-                    searchLessons?.map((lesson, index) => {
+                    results?.map((lesson: lesson, index: number) => {
                         return (
                             <TouchableOpacity key={index} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginHorizontal: 10, marginVertical: 20, padding: 10, borderWidth: 1, borderColor: Colors.mainColor, borderRadius: 5, direction: 'rtl', backgroundColor: Colors.calmWhite }}
                                 onPress={() => router.push(
@@ -101,7 +147,7 @@ export default function Search() {
                                     <Text style={[ConstantStyles.Title2, { fontSize: 18, marginRight: 10 }]}>{lesson.title}</Text>
                                 </View>
                                 {/* Image of Subject */}
-                                <Image source={subjects.find(subject => subject.name === lesson.subject)?.image} style={{ width: 30, height: 30 }} />
+                                <Image source={subjects.find((subject: { image: any; name: string }) => subject.name === lesson.subject)?.image} style={{ width: 30, height: 30 }} />
                             </TouchableOpacity>
                         )
                     })

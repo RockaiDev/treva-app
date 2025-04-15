@@ -36,9 +36,9 @@ export default function explainVideo() {
   const ExplainVideo = Array.isArray(lesson) ? JSON.parse(lesson[0]).explainVideo : JSON.parse(lesson).explainVideo
   const MonthlyPaymentBills = userData.bills.filter((bill: any) => {
     const billDate = typeof (bill.date) === 'string' ? null : bill
-    return billDate
+    const monthlypaymentMethod = bill.method = 'الاشتراك الشهري'
+    return billDate && monthlypaymentMethod
   })
-
   const onshowControlers = () => {
     if (!showcontrolers) {
       setShowControlers(true)
@@ -101,8 +101,14 @@ export default function explainVideo() {
           });
 
         } else {
-
-          const updatedUser = { ...userData, points: +userData.points - +lessonData.price, lessons: [...userData.lessons, lesson] }
+          const bills = userData.bills
+          const bill = {
+            cost: lessonData.price,
+            code: Date.now().toString(),
+            date: Date.now(),
+            method: `شراء محاضرة ${lessonData?.title}`,
+          }
+          const updatedUser = { ...userData, points: +userData.points - +lessonData.price, lessons: [...userData.lessons, lesson], bills: [...bills, bill] }
           await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, updatedUser).then(res => {
             AsyncStorage.setItem('user', JSON.stringify(updatedUser))
             Alert.alert(`${lessonData?.title}`,'تم شراء المحاضرة بنجاح')

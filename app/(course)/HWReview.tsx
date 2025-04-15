@@ -34,9 +34,9 @@ export default function HWReview() {
   const HomeWrokVideo = Array.isArray(lesson) ? JSON.parse(lesson[0]).homeWorkVideo : JSON.parse(lesson).homeWorkVideo
   const MonthlyPaymentBills = userData.bills.filter((bill: any) => {
     const billDate = typeof (bill.date) === 'string' ? null : bill
-    return billDate
+    const monthlypaymentMethod = bill.method = 'الاشتراك الشهري'
+    return billDate && monthlypaymentMethod
   })
-
   const onshowControlers = () => {
     setShowControlers((prev) => !prev);
     if (!showcontrolers) {
@@ -54,7 +54,8 @@ export default function HWReview() {
       if (userData.type === 'TrevaIn') {
         if (MonthlyPaymentBills[MonthlyPaymentBills.length - 1]?.date !== undefined) {
           const lastBill = MonthlyPaymentBills[MonthlyPaymentBills.length - 1]
-          if (new Date(lastBill.date).getTime() + (30 * 24 * 60 * 60 * 1000) > Date.now() && lastBill.cost >= 400) {
+          console.log(new Date(lastBill.date).getTime() + (30 * 24 * 60 * 60 * 1000) > Date.now())
+          if (new Date(lastBill.date).getTime() + (30 * 24 * 60 * 60 * 1000) > Date.now()) {
             setHasLesson(true)
           } else {
             Alert.alert('يجب عليك دفع الاشتراك الشهري لطلاب المعهد', ' قيمة الاشتراك 400 جنية مصري شهرياً', [
@@ -135,8 +136,14 @@ export default function HWReview() {
           });
 
         } else {
-
-          const updatedUser = { ...userData, points: +userData.points - +lessonData.price, lessons: [...userData.lessons, lesson] }
+          const bills = userData.bills
+          const bill = {
+            cost: lessonData.price,
+            code: Date.now().toString(),
+            date: Date.now(),
+            method: `شراء محاضرة ${lessonData?.title}`,
+          }
+          const updatedUser = { ...userData, points: +userData.points - +lessonData.price, lessons: [...userData.lessons, lesson], bills: [...bills, bill] }
           await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, updatedUser).then(res => {
             AsyncStorage.setItem('user', JSON.stringify(updatedUser))
             Alert.alert(`${lessonData?.title}`, 'تم شراء المحاضرة بنجاح')

@@ -1,9 +1,10 @@
-import { View, Text, RefreshControl, ScrollView } from 'react-native'
+import { View, Text, RefreshControl, ScrollView, StatusBar } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { lesson, useDataContext, user } from '@/components/context/DataContext'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 import LessonComponent from '@/components/elements/LessonComponent'
+import { Colors } from '@/constants/Colors'
 
 export default function paidCourses() {
     const [user, setUser] = useState<user | null>(null)
@@ -51,18 +52,23 @@ export default function paidCourses() {
 
     const filteredLessonsOnStorage = Array.from(
         new Map(lessonsInStorage.map(lesson => [lesson._id, lesson])).values()
-    ).reverse();
+    );
 
     return (
-        <ScrollView style={{ flex: 1, padding: 10, backgroundColor: '#fff' }}
-            refreshControl={
-                <RefreshControl refreshing={false} onRefresh={() => fetchUser()} />
-            }
-        >
-            {filteredLessonsOnStorage.length > 0 && user ? filteredLessonsOnStorage.map((lesson, index) => (
-                <LessonComponent key={index} lesson={lesson} user={user} />
-            )) : <Text style={{ textAlign: 'center', fontSize: 20, marginTop: 20 }}>لا توجد دروس مدفوعة</Text>}
-        </ScrollView>
+        <>
+            <StatusBar barStyle='dark-content' backgroundColor={Colors.itemBgColor} />
+            <ScrollView
+                contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.itemBgColor, width: '100%', paddingBottom: 20 }}
+                style={{ flex: 1, backgroundColor: '#fff', width: '100%' }}
+                refreshControl={
+                    <RefreshControl refreshing={false} onRefresh={() => fetchUser()} />
+                }
+            >
+                {filteredLessonsOnStorage.length > 0 && user ? filteredLessonsOnStorage.map((lesson, index) => (
+                    <LessonComponent key={index} lesson={lesson} user={user} />
+                )) : <Text style={{ textAlign: 'center', fontSize: 20, marginTop: 20 }}>لا توجد دروس مدفوعة</Text>}
+            </ScrollView>
+        </>
     )
 
 }

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Treva",
     "slug": "treva-online-academy",
-    "version": "2.5.1",
+    "version": "2.5.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "platforms": [
@@ -22,7 +22,7 @@
       }
     },
     "android": {
-      "versionCode": 47,
+      "versionCode": 48,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#17829c"

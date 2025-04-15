@@ -130,7 +130,7 @@ export default function Home() {
     if (!users || !lessons || !user) {
         return <Loading />
     } else {
-        const Techers = users?.filter(user => user.role === 'teacher')
+        const Teachers = users?.filter(user => user.role === 'teacher')
         const students = users?.filter(user => user.role === 'student')
         let score = 0;
         user?.videos.forEach(video => {
@@ -168,24 +168,58 @@ export default function Home() {
         const filteredLessons = lessons?.filter(lesson => lesson.grade === user?.grade).reverse()
         filteredLessons?.reverse()
 
-        const filteredLessonsOnStorage = lessonsInStorage.filter(lesson => lesson.grade === user?.grade).reverse()
+        const lessonUserWatched = user?.lessons
+        const lessonUserWatchedIds = lessonUserWatched?.map(lesson => lesson._id)
+        const filteredLessonsWatched = lessons?.filter(lesson => lessonUserWatchedIds?.includes(lesson._id)).reverse()
+        const teachers: user[] = []
+        filteredLessonsWatched?.forEach(lesson => {
+            const teacher = Teachers?.find(teacher => teacher.name === lesson.teacher)
+            if (teacher) {
+                teachers.push(teacher)
+            }
+        })
+        const lessonsOfTeachers = lessons?.filter(lesson => {
+            return teachers.some((teacher: user) => teacher.name === lesson.teacher)
+        })
+
+        const filteredLessonsOnStorage = lessonsInStorage.filter(lesson => {
+            const matchedGradeOfUser = user?.grade === lesson.grade
+            const exsistsInLessonsThatUserWatched = lessonUserWatchedIds?.includes(lesson._id)
+            return matchedGradeOfUser && !exsistsInLessonsThatUserWatched
+        }).reverse()
 
         return (
             <>
                 <View style={[styles.header, ConstantStyles.shadowContainer]}>
-                    <Link href={'/Profile'}>
-                        <Image style={{
-                            backgroundColor: Colors.calmWhite,
-                            borderRadius: 50,
-                            width: 50,
-                            height: 50,
-                            overflow: 'hidden',
-                        }} className='border border-black rounded-full overflow-hidden' source={{ uri: user?.image || 'https://res.cloudinary.com/db152mwtg/image/upload/v1734695620/Treva%20Edu%20App/users/tx4dze4uiwb1in8hkz0z.png' }} width={50} height={50} />
-                    </Link>
-                    <View>
-                        <Text style={[ConstantStyles.Title1, { color: Colors.calmWhite, fontSize: 24 }]}>{name}, اهلاً بك في عالم تريڤا</Text>
-                        <Text style={[ConstantStyles.normalText, { color: Colors.calmWhite, fontSize: 16 }]}>{showRandomeIndex()}</Text>
+                    <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 10 }}>
+                        <Link href={'/Profile'}>
+                            <Image style={{
+                                backgroundColor: Colors.calmWhite,
+                                borderRadius: 50,
+                                width: 50,
+                                height: 50,
+                                overflow: 'hidden',
+                            }} className='border border-black rounded-full overflow-hidden' source={{ uri: user?.image || 'https://res.cloudinary.com/db152mwtg/image/upload/v1734695620/Treva%20Edu%20App/users/tx4dze4uiwb1in8hkz0z.png' }} width={50} height={50} />
+                        </Link>
+                        <View>
+                            <Text style={[ConstantStyles.Title1, { color: Colors.calmWhite, fontSize: 24 }]}>{name}, اهلاً بك في عالم تريڤا</Text>
+                            <Text style={[ConstantStyles.normalText, { color: Colors.calmWhite, fontSize: 16 }]}>{showRandomeIndex()}</Text>
+                        </View>
                     </View>
+                    {/* Search input */}
+                    <TouchableOpacity onPress={() => router.push('/(subPages)/search')} style={[ConstantStyles.shadowContainer, { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', margin: 10, direction: 'rtl', backgroundColor: Colors.calmWhite, borderRadius: 50, paddingHorizontal: 10, width: '90%', height: 40, overflow: 'hidden' }]}>
+                        <TouchableOpacity style={styles.iconContainer} onPress={() => router.push('/(subPages)/search')}>
+                            <FontAwesome name="search" size={15} color={'gray'} />
+                        </TouchableOpacity>
+                        <View>
+                            <TouchableOpacity
+                                style={[styles.inputText]}
+                                onPress={(e => router.push('/(subPages)/search'))}
+                            >
+                                <Text style={[ConstantStyles.normalText, { color: 'gray', textAlign: 'right', fontSize: 16 }]}>معــاك تريـڤـا .. اقــدر  اسـاعـدك ازاي ؟</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
                 </View>
                 <StatusBar barStyle={'light-content'} />
                 <LinearGradient
@@ -217,20 +251,6 @@ export default function Home() {
                                 style={ConstantStyles.page}
                                 showsVerticalScrollIndicator={false}
                             >
-                                {/* Search input */}
-                                <TouchableOpacity onPress={() => router.push('/(subPages)/search')} style={[ConstantStyles.shadowContainer, { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', margin: 10, direction: 'rtl', backgroundColor: Colors.calmWhite, borderRadius: 50, padding: 10 }]}>
-                                    <TouchableOpacity style={styles.iconContainer} onPress={() => router.push('/(subPages)/search')}>
-                                        <FontAwesome name="search" size={20} color={'gray'} />
-                                    </TouchableOpacity>
-                                    <View>
-                                        <TouchableOpacity
-                                            style={[styles.inputText]}
-                                            onPress={(e => router.push('/(subPages)/search'))}
-                                        >
-                                            <Text style={[ConstantStyles.normalText, { color: 'gray', textAlign: 'right', fontSize: 16 }]}>معــاك تريـڤـا .. اقــدر  اسـاعـدك ازاي ؟</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </TouchableOpacity>
                                 {/* Scoure */}
                                 <TouchableOpacity style={[styles.ScoureContainer, ConstantStyles.shadowContainer]} onPress={() => router.push('/(subPages)/Leaderboard')}>
                                     <Image source={require('@/assets/images/win.png')} style={{
@@ -304,11 +324,11 @@ export default function Home() {
                                         showsHorizontalScrollIndicator={false}
                                         horizontal
                                         contentContainerStyle={{ flexDirection: 'row' }}
-                                        data={filteredLessons}
+                                        data={lessonsOfTeachers}
                                         keyExtractor={(item, index) => index.toString()}
                                         renderItem={({ item: lesson }) => (
                                             <TouchableOpacity
-                                                style={[styles.cardsubject, {direction: 'rtl'}]}
+                                                style={[styles.cardsubject, { direction: 'rtl' }]}
                                                 onPress={() => router.push({
                                                     pathname: '/(course)/[id]',
                                                     params: {
@@ -318,10 +338,10 @@ export default function Home() {
                                                     }
                                                 })}>
                                                 <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: 20 }}>
-                                                    <Image source={subjects.find(subject => subject.name === lesson.subject)?.image} style={{ width: 20, height: 20 }} />
-                                                    <Text style={[ConstantStyles.Title2, { fontSize: 20, fontFamily: Fonts.boldText, textAlign: 'center', color: Colors.calmWhite }]}>{lesson.title}</Text>
-                                                    <Text style={[ConstantStyles.Title2, { fontSize: 20, fontFamily: Fonts.blackText, marginBottom: 0, color: Colors.calmWhite }]}>مادة {lesson.subject}</Text>
-                                                    <Text style={[ConstantStyles.normalText, { fontSize: 16, fontFamily: Fonts.mediumText, textAlign: 'center', color: Colors.calmWhite }]}>م/ {lesson.teacher}</Text>
+                                                    <Image source={subjects.find(subject => subject.name === lesson.subject)?.image} style={{ width: 30, height: 30 }} />
+                                                    <Text style={[ConstantStyles.Title2, { fontSize: 23, fontFamily: Fonts.boldText, textAlign: 'center', color: Colors.calmWhite }]}>{lesson.title}</Text>
+                                                    <Text style={[ConstantStyles.Title2, { fontSize: 23, fontFamily: Fonts.blackText, marginBottom: 0, color: Colors.calmWhite }]}>مادة {lesson.subject}</Text>
+                                                    <Text style={[ConstantStyles.normalText, { fontSize: 18, fontFamily: Fonts.mediumText, textAlign: 'center', color: Colors.calmWhite }]}>م/ {lesson.teacher}</Text>
                                                     <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'center', width: '100%', marginBottom: 30 }}>
                                                     </View>
                                                 </View>
@@ -351,7 +371,7 @@ export default function Home() {
                                             )).reverse()}
                                         </ScrollView>
                                     ) : (
-                                        <Text style={[ConstantStyles.Title2, {marginTop: 20}]}>لم تقم بمشاهدة اي محاضرة بعد</Text>
+                                        <Text style={[ConstantStyles.Title2, { marginTop: 20 }]}>لم تقم بمشاهدة اي محاضرة بعد</Text>
                                     )}
                                 </View>
 
@@ -380,9 +400,9 @@ const styles = StyleSheet.create({
         width: '100%',
         textAlign: 'right',
         display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     Subjects: {
         display: 'flex',
@@ -399,8 +419,8 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 180,
-        height: 180,
+        width: 200,
+        height: 200,
         shadowColor: Colors.textColor,
         shadowOffset: {
             width: 0,

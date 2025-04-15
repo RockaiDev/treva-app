@@ -13,7 +13,7 @@ I18nManager.allowRTL(false);
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
-  // usePreventScreenCapture()
+  usePreventScreenCapture()
   const insets = useSafeAreaInsets()
 
   const [loaded] = useFonts({

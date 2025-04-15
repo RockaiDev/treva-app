@@ -193,10 +193,10 @@ export default function LessonComponent({ lesson, user }: LessonComponentProps) 
 
 const styles = StyleSheet.create({
     lessonContainer: {
-        width: Dimensions.get('window').width - 50,
+        width: Dimensions.get('window').width - 70,
         height: 160,
         backgroundColor: Colors.calmWhite,
-        marginHorizontal: 10,
+        marginHorizontal: 5,
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
