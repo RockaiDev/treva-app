@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import * as FileSystem from 'expo-file-system'
 import { shareAsync } from 'expo-sharing'
 import Constants from 'expo-constants'
+import { usePreventScreenCapture } from 'expo-screen-capture'
 
 
 interface props {
@@ -40,6 +41,13 @@ export default function ExamVideo() {
     const monthlypaymentMethod = bill.method = 'الاشتراك الشهري'
     return billDate && monthlypaymentMethod
   })
+
+  // Prevent screen capture
+   if (userData?.mobile !== '01555555555') {
+     usePreventScreenCapture()
+   }
+
+
 
   const onshowControlers = () => {
     if (!showcontrolers) {

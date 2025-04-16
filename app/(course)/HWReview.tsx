@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import axios from 'axios'
 import { LinearGradient } from 'expo-linear-gradient'
 import Constants from 'expo-constants'
+import { usePreventScreenCapture } from 'expo-screen-capture'
 
 interface props {
   lesson: lesson
@@ -37,11 +38,16 @@ export default function HWReview() {
     const monthlypaymentMethod = bill.method = 'الاشتراك الشهري'
     return billDate && monthlypaymentMethod
   })
+
+  if (userData?.mobile !== '01555555555') {
+    usePreventScreenCapture()
+  }
+
   const onshowControlers = () => {
     setShowControlers((prev) => !prev);
     if (!showcontrolers) {
       const timeout = setTimeout(() => {
-      setShowControlers(false);
+        setShowControlers(false);
       }, 5000);
 
       return () => clearTimeout(timeout); // Clear timeout if the component unmounts or re-renders

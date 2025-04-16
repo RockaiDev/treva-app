@@ -12,6 +12,7 @@ import axios from 'axios'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Image } from 'react-native'
 import Constants from 'expo-constants'
+import { usePreventScreenCapture } from 'expo-screen-capture'
 
 
 interface props {
@@ -39,6 +40,13 @@ export default function explainVideo() {
     const monthlypaymentMethod = bill.method = 'الاشتراك الشهري'
     return billDate && monthlypaymentMethod
   })
+
+  if (userData?.mobile !== '01555555555') {
+    usePreventScreenCapture()
+  }
+
+
+
   const onshowControlers = () => {
     if (!showcontrolers) {
       setShowControlers(true)
@@ -75,7 +83,7 @@ export default function explainVideo() {
     }
     if (lessonData?.price !== undefined) {
       if (+userData.points < +lessonData.price) {
-        Alert.alert(`${lessonData?.title}`,'لا يوجد لديك رصيد كافي لشراء المحاضرة')
+        Alert.alert(`${lessonData?.title}`, 'لا يوجد لديك رصيد كافي لشراء المحاضرة')
         router.push('/(tabs)/Wallet')
         setHasLesson(false)
       } else {
@@ -93,7 +101,7 @@ export default function explainVideo() {
           };
           await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, updatedUser).then(res => {
             AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-            Alert.alert(`${lessonData?.title}`,'تم شراء المحاضرة بنجاح');
+            Alert.alert(`${lessonData?.title}`, 'تم شراء المحاضرة بنجاح');
             setHasLesson(true);
             setCardBuyLesson(false);
           }).catch(err => {
@@ -111,7 +119,7 @@ export default function explainVideo() {
           const updatedUser = { ...userData, points: +userData.points - +lessonData.price, lessons: [...userData.lessons, lesson], bills: [...bills, bill] }
           await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, updatedUser).then(res => {
             AsyncStorage.setItem('user', JSON.stringify(updatedUser))
-            Alert.alert(`${lessonData?.title}`,'تم شراء المحاضرة بنجاح')
+            Alert.alert(`${lessonData?.title}`, 'تم شراء المحاضرة بنجاح')
             setHasLesson(true)
             setCardBuyLesson(false)
           }).catch(err => {
@@ -164,7 +172,7 @@ export default function explainVideo() {
         <View style={styles.videoContainer}>
           <YoutubeIframe
             videoId={ExplainVideo.link}
-            height={Dimensions.get('window').height / 3 + 40 }
+            height={Dimensions.get('window').height / 3 + 40}
             play={playing}
             width={Dimensions.get('window').width + 40}
             initialPlayerParams={{
@@ -391,7 +399,7 @@ export default function explainVideo() {
           >
             <FontAwesome name="close" size={50} color="white" />
           </TouchableOpacity>
-          <View style={{ transform: [{ rotate: '90deg' }] , width: Dimensions.get('window').height, height: Dimensions.get('window').width, overflow: 'hidden' , display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ transform: [{ rotate: '90deg' }], width: Dimensions.get('window').height, height: Dimensions.get('window').width, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 
             <YoutubeIframe
               videoId={ExplainVideo.link}
@@ -403,7 +411,7 @@ export default function explainVideo() {
                 showClosedCaptions: false,
                 modestbranding: false,
                 rel: false,
-                iv_load_policy: 3,    
+                iv_load_policy: 3,
               }}
               webViewProps={{
                 allowsFullscreenVideo: true,
@@ -557,31 +565,31 @@ export default function explainVideo() {
                 </View>
                 <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: 20 }}>
                   <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', direction: 'rtl', marginBottom: 20 }}>
-                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5 , marginRight: 10 }]}>عنوان المحاضرة:</Text>
+                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5, marginRight: 10 }]}>عنوان المحاضرة:</Text>
                     <View style={[ConstantStyles.shadowContainer, { display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.calmWhite, padding: 5, width: 200, borderRadius: 20, height: 40, marginLeft: 10 }]}>
                       <Text style={[ConstantStyles.Title2, { fontSize: 14, color: Colors.mainColor }]}>{lessonData.title}</Text>
                     </View>
                   </View>
                   <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', direction: 'rtl', marginBottom: 20 }}>
-                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5 , marginRight: 10 }]}>المادة:</Text>
+                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5, marginRight: 10 }]}>المادة:</Text>
                     <View style={[ConstantStyles.shadowContainer, { display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.calmWhite, padding: 5, width: 200, borderRadius: 20, height: 40, marginLeft: 10 }]}>
                       <Text style={[ConstantStyles.Title2, { fontSize: 14, color: Colors.mainColor }]}>{lessonData.subject}</Text>
                     </View>
                   </View>
                   <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', direction: 'rtl', marginBottom: 20 }}>
-                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5 , marginRight: 10 }]}>الصف:</Text>
+                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5, marginRight: 10 }]}>الصف:</Text>
                     <View style={[ConstantStyles.shadowContainer, { display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.calmWhite, padding: 5, width: 200, borderRadius: 20, height: 40, marginLeft: 10 }]}>
                       <Text style={[ConstantStyles.Title2, { fontSize: 14, color: Colors.mainColor }]}>{lessonData.grade}</Text>
                     </View>
                   </View>
                   <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', direction: 'rtl', marginBottom: 20 }}>
-                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5 , marginRight: 10 }]}>السعر:</Text>
+                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5, marginRight: 10 }]}>السعر:</Text>
                     <View style={[ConstantStyles.shadowContainer, { display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.calmWhite, padding: 5, width: 200, borderRadius: 20, height: 40, marginLeft: 10 }]}>
                       <Text style={[ConstantStyles.Title2, { fontSize: 14, color: Colors.mainColor }]}>{lessonData?.price} جنية مصري</Text>
                     </View>
                   </View>
                   <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', direction: 'rtl', marginBottom: 20 }}>
-                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5 , marginRight: 10 }]}>الرصيد الحالي:</Text>
+                    <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5, marginRight: 10 }]}>الرصيد الحالي:</Text>
                     <View style={[ConstantStyles.shadowContainer, { display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.calmWhite, padding: 5, width: 200, borderRadius: 20, height: 40, marginLeft: 10 }]}>
                       <Text style={[ConstantStyles.Title2, { fontSize: 14, color: Colors.mainColor }]}>{userData.points} جنية مصري</Text>
                     </View>
@@ -590,7 +598,7 @@ export default function explainVideo() {
                     <Text style={[ConstantStyles.Title2, { fontSize: 18, marginBottom: 5, color: 'red' }]}>لا يوجد لديك رصيد كافي لشراء المحاضرة</Text>
                   ) : (
                     <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', direction: 'rtl', marginBottom: 20 }}>
-                      <Text style={[ConstantStyles.Title2, { fontSize: 16, marginBottom: 5 , marginRight: 10 }]}>الرصيد بعد عملية الشراء:</Text>
+                      <Text style={[ConstantStyles.Title2, { fontSize: 16, marginBottom: 5, marginRight: 10 }]}>الرصيد بعد عملية الشراء:</Text>
                       <View style={[ConstantStyles.shadowContainer, { display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.calmWhite, padding: 5, width: 160, borderRadius: 20, height: 40, marginLeft: 10 }]}>
                         <Text style={[ConstantStyles.Title2, { fontSize: 14, color: Colors.mainColor }]}>{userData.points - lessonData?.price} جنية مصري</Text>
                       </View>

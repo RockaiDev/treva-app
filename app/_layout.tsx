@@ -4,7 +4,6 @@ import { useFonts } from 'expo-font'
 import { useEffect } from "react";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import DataProvider from "@/components/context/DataContext";
-import { usePreventScreenCapture } from 'expo-screen-capture';
 import { I18nManager } from "react-native";
 
 I18nManager.forceRTL(false);
@@ -13,7 +12,6 @@ I18nManager.allowRTL(false);
 SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
-  usePreventScreenCapture()
   const insets = useSafeAreaInsets()
 
   const [loaded] = useFonts({
