@@ -185,7 +185,7 @@ export default function Home() {
         const filteredLessonsOnStorage = lessonsInStorage.filter(lesson => {
             const matchedGradeOfUser = user?.grade === lesson.grade
             const exsistsInLessonsThatUserWatched = lessonUserWatchedIds?.includes(lesson._id)
-            return matchedGradeOfUser && !exsistsInLessonsThatUserWatched
+            return matchedGradeOfUser && exsistsInLessonsThatUserWatched
         }).reverse()
 
         return (

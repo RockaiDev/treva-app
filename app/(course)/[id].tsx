@@ -278,7 +278,7 @@ export default function Course() {
           {/* Description */}
           <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', direction: 'rtl', marginVertical: 10 }}>
             <Text style={[ConstantStyles.Title1, { fontSize: 24 }]}>الوصف</Text>
-            <Text style={[ConstantStyles.normalText, { fontSize: 16, color: Colors.textColor, textAlign: 'left' }]}>{lessonData?.description.slice(0, 30)}..</Text>
+            <Text style={[ConstantStyles.normalText, { fontSize: 16, color: Colors.textColor, textAlign: 'left' }]}>{lessonData?.description}</Text>
           </View>
 
           {/* Videos and Exams */}

@@ -50,9 +50,13 @@ export default function paidCourses() {
     }, [users])
 
 
-    const filteredLessonsOnStorage = Array.from(
-        new Map(lessonsInStorage.map(lesson => [lesson._id, lesson])).values()
-    );
+    const lessonUserWatchedIds = user?.lessons ? (user.lessons as { _id: string; date: number }[]).map((lesson) => lesson._id) : null
+
+    const filteredLessonsOnStorage = lessonsInStorage.filter(lesson => {
+        const matchedGradeOfUser = user?.grade === lesson.grade
+        const exsistsInLessonsThatUserWatched = lessonUserWatchedIds?.includes(lesson._id)
+        return matchedGradeOfUser && exsistsInLessonsThatUserWatched
+    }).reverse()
 
     return (
         <>
