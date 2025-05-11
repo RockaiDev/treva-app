@@ -275,6 +275,31 @@ export default function Course() {
             <Text style={[ConstantStyles.Title1, { fontSize: 26 }]}>{lessonData?.title}</Text>
             <Text style={[ConstantStyles.Title2, { fontSize: 22, color: 'gray' }]}>{lessonData?.grade}</Text>
           </View>
+
+          {/* Price and Purchase Section */}
+          {!hasLesson && (
+            <View style={styles.priceContainer}>
+              <View style={styles.priceInfo}>
+                <Text style={[ConstantStyles.Title1, { fontSize: 24 }]}>سعر المحاضرة</Text>
+                <Text style={[ConstantStyles.Title1, { fontSize: 28, color: Colors.mainColor }]}>{lessonData?.price} جنية مصري</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.purchaseButton}
+                onPress={() => {
+                  router.push({
+                    pathname: '/(tabs)/Wallet',
+                    params: {
+                      lessonId: lessonData?._id,
+                      price: lessonData?.price
+                    }
+                  })
+                }}
+              >
+                <Text style={styles.purchaseButtonText}>شراء المحاضرة</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {/* Description */}
           <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', direction: 'rtl', marginVertical: 10 }}>
             <Text style={[ConstantStyles.Title1, { fontSize: 24 }]}>الوصف</Text>
@@ -407,5 +432,31 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 10,
-  }
+  },
+  priceContainer: {
+    width: '100%',
+    backgroundColor: Colors.calmWhite,
+    borderRadius: 10,
+    padding: 15,
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: Colors.mainColor,
+  },
+  priceInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  purchaseButton: {
+    backgroundColor: Colors.mainColor,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  purchaseButtonText: {
+    color: Colors.calmWhite,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 })

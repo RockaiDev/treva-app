@@ -87,6 +87,7 @@ export interface user {
     role: string,
     points: number,
     StdOfMonth: Boolean,
+    educationLevel: string,
     videos: {
         title: string,
         attaches: string,

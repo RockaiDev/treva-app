@@ -10,8 +10,11 @@ import { Colors } from '@/constants/Colors'
 import { Fonts } from '@/constants/Fonts'
 import { LinearGradient } from 'expo-linear-gradient'
 import Constants from 'expo-constants'
+// import { useRealtime } from '../../contexts/RealtimeContext';
 
 export default function Profile() {
+    // const { updates } = useRealtime();
+    // const profileData = updates.profile;
     const [user, setUser] = useState<any>()
     const name = user ? user.name : 'مجهول'
     const grade = user ? user.grade : 'غير محدد'

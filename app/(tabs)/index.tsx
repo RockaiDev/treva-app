@@ -12,6 +12,8 @@ import LessonComponent from '@/components/elements/LessonComponent'
 import { FontAwesome, Ionicons } from '@expo/vector-icons'
 import LottieView from 'lottie-react-native'
 import { LinearGradient } from 'expo-linear-gradient'
+// import { useRealtime } from '../../contexts/RealtimeContext'
+// import { NotificationBanner } from '@/components/NotificationBanner'
 
 
 export default function Home() {
@@ -20,6 +22,8 @@ export default function Home() {
     const [lessonsInStorage, setLessonsInStorage] = useState<lesson[]>([])
     const name = user ? user.name : 'مجهول'
     const { users, lessons } = useDataContext()
+    // const { updates } = useRealtime()
+    // const notifications = updates.notifications
 
     const fetchUser = async () => {
         const userExist = await AsyncStorage.getItem('user')
@@ -179,7 +183,7 @@ export default function Home() {
             }
         })
         const lessonsOfTeachers = lessons?.filter(lesson => {
-            return teachers.some((teacher: user) => teacher.name === lesson.teacher)
+            return teachers.some((teacher: user) => teacher.name === lesson.teacher) && lesson.grade === user?.grade
         })
 
         const filteredLessonsOnStorage = lessonsInStorage.filter(lesson => {
@@ -190,6 +194,7 @@ export default function Home() {
 
         return (
             <>
+                {/* <NotificationBanner /> */}
                 <View style={[styles.header, ConstantStyles.shadowContainer]}>
                     <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 10 }}>
                         <Link href={'/Profile'}>

@@ -1,4 +1,4 @@
-import { Alert, Dimensions, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Dimensions, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Animated } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { lesson, user } from '@/components/context/DataContext'
 import { router, Stack, useLocalSearchParams, useNavigation } from 'expo-router'
@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { Image } from 'react-native'
 import Constants from 'expo-constants'
 import { usePreventScreenCapture } from 'expo-screen-capture'
+import Slider from '@react-native-community/slider'
 
 
 interface props {
@@ -31,6 +32,10 @@ export default function explainVideo() {
   const [hasLesson, setHasLesson] = useState(false)
   const [openBuyLesson, setOpenBuyLesson] = useState(false)
   const [CardBuyLesson, setCardBuyLesson] = useState(false)
+  const [duration, setDuration] = useState(0)
+  const [showControls, setShowControls] = useState(true)
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const hideTimeout = useRef<ReturnType<typeof setTimeout>>(null);
 
   const userData = Array.isArray(user) ? JSON.parse(user[0]) : JSON.parse(user)
   const lessonData = Array.isArray(lesson) ? JSON.parse(lesson[0]) : JSON.parse(lesson)
@@ -139,6 +144,96 @@ export default function explainVideo() {
     }
   }
 
+  const toggleControls = () => {
+    if (hideTimeout.current) {
+      clearTimeout(hideTimeout.current);
+    }
+
+    setShowControls(!showControls);
+
+    Animated.timing(fadeAnim, {
+      toValue: showControls ? 0 : 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+
+    if (!showControls) {
+      hideTimeout.current = setTimeout(() => {
+        setShowControls(false);
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }, 5000);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  const onVideoProgress = (state: { currentTime: number }) => {
+    if (state.currentTime !== currentTime) {
+      setCurrentTime(state.currentTime);
+    }
+  };
+
+  const onVideoReady = () => {
+    player.current?.getDuration().then((duration) => {
+      if (duration) {
+        setDuration(duration);
+      }
+    });
+  };
+
+  const handleSeek = async (value: number) => {
+    if (player.current) {
+      await player.current.seekTo(value, true);
+      setCurrentTime(value);
+    }
+  };
+
+  // Add useEffect to update time periodically
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (playing || playing2) {
+      interval = setInterval(async () => {
+        const time = await player.current?.getCurrentTime() || 0;
+        setCurrentTime(time);
+      }, 1000); // Update every second
+    }
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [playing, playing2]);
+
+  // Initialize controls visibility
+  useEffect(() => {
+    // Show controls initially
+    setShowControls(true);
+    fadeAnim.setValue(1);
+
+    // Auto-hide after 5 seconds
+    hideTimeout.current = setTimeout(() => {
+      setShowControls(false);
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }, 5000);
+
+    return () => {
+      if (hideTimeout.current) {
+        clearTimeout(hideTimeout.current);
+      }
+    };
+  }, []);
 
   return (
     <>
@@ -176,143 +271,208 @@ export default function explainVideo() {
             play={playing}
             width={Dimensions.get('window').width + 40}
             initialPlayerParams={{
-              controls: false, // Hide controls
-              modestbranding: false, // Hide YouTube logo
-              rel: false, // Prevent related videos at the end
-              iv_load_policy: 3, // Hide annotations
+              controls: false,
+              showClosedCaptions: false,
+              modestbranding: false,
+              rel: false,
+              iv_load_policy: 3,
             }}
             webViewProps={{
               allowsFullscreenVideo: true,
             }}
             contentScale={0.000000000001}
             ref={player}
+            onPlaybackStatusUpdate={onVideoProgress}
+            onReady={onVideoReady}
+            onChangeState={(state: string) => {
+              if (state === 'ended') {
+                setPlaying(false);
+              }
+            }}
           />
 
-          {/* layer to cannot approch video youtube */}
+          {/* Touchable layer for controls */}
           <TouchableOpacity
-            onPress={() => onshowControlers()}
+            onPress={toggleControls}
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
-              padding: 5,
+              right: 0,
+              bottom: 0,
               zIndex: 1,
-              width: '100%',
-              height: '100%',
             }}
           />
 
-          <View
+          {/* Animated controls container */}
+          <Animated.View
             style={{
               position: 'absolute',
               right: 0,
               bottom: 0,
-              padding: 5,
+              padding: 8,
               zIndex: 2,
-              backgroundColor: Colors.mainColor,
+              backgroundColor: 'rgba(0,0,0,0.8)',
               width: '100%',
-              height: 40,
+              height: 110,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              direction: 'rtl',
+              borderTopLeftRadius: 15,
+              borderTopRightRadius: 15,
+              opacity: fadeAnim,
+              transform: [{
+                translateY: fadeAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [20, 0]
+                })
+              }]
+            }}
+          >
+            {/* Timeline Slider */}
+            <View style={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 8,
+              marginBottom: 8,
+            }}>
+              <Text style={{
+                color: Colors.calmWhite,
+                fontSize: 12,
+                fontFamily: 'System',
+                fontWeight: '500',
+                minWidth: 40,
+                textAlign: 'center',
+              }}>{formatTime(currentTime)}</Text>
+              <Slider
+                style={{ flex: 1, marginHorizontal: 12, height: 30 }}
+                minimumValue={0}
+                maximumValue={duration || 1}
+                value={currentTime}
+                onSlidingComplete={handleSeek}
+                minimumTrackTintColor={Colors.mainColor}
+                maximumTrackTintColor="rgba(255,255,255,0.2)"
+                thumbTintColor={Colors.mainColor}
+                step={1}
+              />
+              <Text style={{
+                color: Colors.calmWhite,
+                fontSize: 12,
+                fontFamily: 'System',
+                fontWeight: '500',
+                minWidth: 40,
+                textAlign: 'center',
+              }}>{formatTime(duration)}</Text>
+            </View>
+
+            {/* Control Buttons */}
+            <View style={{
+              width: '100%',
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'space-between',
               alignItems: 'center',
-              direction: 'rtl',
-            }}
-          >
+              paddingHorizontal: 8,
+            }}>
+              {/* FullScreen */}
+              <TouchableOpacity
+                onPress={async () => {
+                  setOpenFullScreen(!openFullScreen)
+                  const time = await player.current?.getCurrentTime() || 0;
+                  setCurrentTime(time);
+                  setPlaying(false)
+                }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: 6,
+                  padding: 6,
+                }}
+              >
+                <MaterialIcons name="fullscreen" size={20} color={Colors.calmWhite} />
+              </TouchableOpacity>
 
-            {/* FullScreen */}
-            <TouchableOpacity
-              onPress={async () => {
-                setOpenFullScreen(!openFullScreen)
-                const time = await player.current?.getCurrentTime() || 0;
-                setCurrentTime(time);
-                setPlaying(false)
-              }}
-              style={{
+              <View style={{
                 display: 'flex',
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: Colors.mainColor,
-                borderRadius: 5,
-                padding: 5,
-              }}
-            >
-              <MaterialIcons name="fullscreen" size={20} color={Colors.calmWhite} />
-            </TouchableOpacity>
+                direction: 'ltr',
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: 6,
+                padding: 4,
+              }}>
+                {/* before 10 sec */}
+                <TouchableOpacity
+                  onPress={async () => player.current?.seekTo(await player.current?.getCurrentTime() - 10, true)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 6,
+                  }}
+                >
+                  <MaterialIcons name="replay-10" size={20} color={Colors.calmWhite} />
+                </TouchableOpacity>
 
+                <TouchableOpacity
+                  onPress={() => setPlaying(!playing)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 6,
+                    marginHorizontal: 8,
+                  }}
+                >
+                  {playing ? (
+                    <MaterialIcons name="pause" size={24} color={Colors.calmWhite} />
+                  ) : (
+                    <Feather name="play" size={24} color={Colors.calmWhite} />
+                  )}
+                </TouchableOpacity>
 
-            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', direction: 'ltr' }}>
-              {/* before 10 sec */}
+                {/* after 10 sec */}
+                <TouchableOpacity
+                  onPress={async () => player.current?.seekTo(await player.current?.getCurrentTime() + 10, true)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 6,
+                  }}
+                >
+                  <MaterialIcons name="forward-10" size={20} color={Colors.calmWhite} />
+                </TouchableOpacity>
+              </View>
+
               <TouchableOpacity
-                onPress={async () => player.current?.seekTo(await player.current?.getCurrentTime() - 10, true)}
+                onPress={() => player.current?.seekTo(0, true)}
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: Colors.mainColor,
-                  borderRadius: 5,
-                  padding: 5,
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: 6,
+                  padding: 6,
                 }}
               >
-                <MaterialIcons name="replay-10" size={20} color={Colors.bgColor} />
+                <MaterialIcons name="replay" size={20} color={Colors.calmWhite} />
               </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => setPlaying(!playing)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: Colors.mainColor,
-                  borderRadius: 5,
-                  padding: 5,
-                }}
-              >
-                {playing ? (
-                  <MaterialIcons name="pause" size={20} color={Colors.calmWhite} />
-                ) : (
-                  <Feather name="play" size={20} color={Colors.calmWhite} />
-                )}
-              </TouchableOpacity>
-
-              {/* after 10 sec */}
-              <TouchableOpacity
-                onPress={async () => player.current?.seekTo(await player.current?.getCurrentTime() + 10, true)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: Colors.mainColor,
-                  borderRadius: 5,
-                  padding: 5,
-                }}
-              >
-                <MaterialIcons name="forward-10" size={20} color={Colors.bgColor} />
-              </TouchableOpacity>
-
             </View>
-
-            <TouchableOpacity
-              onPress={() => player.current?.seekTo(0, true)}
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: Colors.mainColor,
-                borderRadius: 5,
-                padding: 5,
-              }}
-            >
-              <MaterialIcons name="replay" size={20} color={Colors.calmWhite} />
-            </TouchableOpacity>
-
-
-          </View>
+          </Animated.View>
           <View
             style={{
               position: 'absolute',
@@ -418,12 +578,19 @@ export default function explainVideo() {
               }}
               contentScale={0.000000000001}
               ref={player}
+              onPlaybackStatusUpdate={onVideoProgress}
+              onReady={onVideoReady}
+              onChangeState={(state: string) => {
+                if (state === 'ended') {
+                  setPlaying2(false);
+                }
+              }}
             />
           </View>
 
 
           <TouchableOpacity
-            onPress={() => onshowControlers()}
+            onPress={toggleControls}
             style={{
               position: 'absolute',
               height: 1000,
@@ -432,68 +599,123 @@ export default function explainVideo() {
               zIndex: 1,
               display: 'flex',
               flexDirection: 'row',
-              justifyContent: 'center',
+              justifyContent: 'flex-start',
               alignItems: 'center',
               direction: 'rtl',
               transform: [{ rotate: '90deg' }],
             }}
           >
-            {showcontrolers && (
+            {showControls && (
+              <View style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                direction: 'ltr',
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                padding: 15,
+                paddingHorizontal: 40,
+                borderRadius: 12,
+                position: 'absolute',
+                right: 20,
+                bottom: '25%',
+                width: '100%',
+                transform: [{ translateY: -50 }],
+              }}>
+                <View style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  direction: 'ltr',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: 8,
+                  padding: 8,
+                }}>
+                  {/* before 10 sec */}
+                  <TouchableOpacity
+                    onPress={async () => player.current?.seekTo(await player.current?.getCurrentTime() - 10, true)}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 8,
+                    }}
+                  >
+                    <MaterialIcons name="replay-10" size={30} color={Colors.calmWhite} />
+                  </TouchableOpacity>
 
-              <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', direction: 'ltr' }}>
-                {/* before 10 sec */}
-                <TouchableOpacity
-                  onPress={async () => player.current?.seekTo(await player.current?.getCurrentTime() - 10, true)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: Colors.mainColor,
-                    borderRadius: 5,
-                    padding: 5,
-                    margin: 10,
-                  }}
-                >
-                  <MaterialIcons name="replay-10" size={50} color={Colors.bgColor} />
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => setPlaying2(!playing2)}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 8,
+                      marginHorizontal: 15,
+                    }}
+                  >
+                    {playing2 ? (
+                      <MaterialIcons name="pause" size={35} color={Colors.calmWhite} />
+                    ) : (
+                      <Feather name="play" size={35} color={Colors.calmWhite} />
+                    )}
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={() => setPlaying2(!playing2)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: Colors.mainColor,
-                    borderRadius: 5,
-                    padding: 5,
-                    margin: 10,
-                  }}
-                >
-                  {playing2 ? (
-                    <MaterialIcons name="pause" size={50} color={Colors.calmWhite} />
-                  ) : (
-                    <Feather name="play" size={50} color={Colors.calmWhite} />
-                  )}
-                </TouchableOpacity>
-
-                {/* after 10 sec */}
-                <TouchableOpacity
-                  onPress={async () => player.current?.seekTo(await player.current?.getCurrentTime() + 10, true)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: Colors.mainColor,
-                    borderRadius: 5,
-                    padding: 5,
-                    margin: 10,
-                  }}
-                >
-                  <MaterialIcons name="forward-10" size={50} color={Colors.bgColor} />
-                </TouchableOpacity>
+                  {/* after 10 sec */}
+                  <TouchableOpacity
+                    onPress={async () => player.current?.seekTo(await player.current?.getCurrentTime() + 10, true)}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 8,
+                    }}
+                  >
+                    <MaterialIcons name="forward-10" size={30} color={Colors.calmWhite} />
+                  </TouchableOpacity>
+                </View>
+                {/* Timeline Slider */}
+                <View style={{
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 15,
+                  paddingHorizontal: 15,
+                }}>
+                  <Text style={{
+                    color: Colors.calmWhite,
+                    fontSize: 14,
+                    fontFamily: 'System',
+                    fontWeight: '500',
+                    minWidth: 45,
+                    textAlign: 'center',
+                  }}>{formatTime(currentTime)}</Text>
+                  <Slider
+                    style={{ flex: 1, marginHorizontal: 15, height: 30 }}
+                    minimumValue={0}
+                    maximumValue={duration || 1}
+                    value={currentTime}
+                    onSlidingComplete={handleSeek}
+                    minimumTrackTintColor={Colors.mainColor}
+                    maximumTrackTintColor="rgba(255,255,255,0.2)"
+                    thumbTintColor={Colors.mainColor}
+                    step={1}
+                  />
+                  <Text style={{
+                    color: Colors.calmWhite,
+                    fontSize: 14,
+                    fontFamily: 'System',
+                    fontWeight: '500',
+                    minWidth: 45,
+                    textAlign: 'center',
+                  }}>{formatTime(duration)}</Text>
+                </View>
 
               </View>
             )}
@@ -649,7 +871,7 @@ const styles = StyleSheet.create({
   videoContainer: {
     width: '100%',
     height: Dimensions.get('window').height / 3,
-    backgroundColor: Colors.calmWhite,
+    backgroundColor: Colors.mainColor ,
     flexDirection: 'column',
     justifyContent: 'flex-start',
     alignItems: 'center',

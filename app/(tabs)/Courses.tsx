@@ -11,27 +11,80 @@ import Loading from '@/components/Loading'
 import ExamComponent from '@/components/elements/ExamComponent'
 import { Colors } from '@/constants/Colors'
 import { LinearGradient } from 'expo-linear-gradient'
+// import { useRealtime } from '../../contexts/RealtimeContext'
 
-const subjects = [
-  { image: require('../../assets/images/subjects/arabic.png'), name: 'اللغة العربية' },
-  { image: require('../../assets/images/subjects/english.png'), name: 'اللغة الانجليزية' },
-  { image: require('../../assets/images/subjects/french.png'), name: 'اللغة الفرنسية' },
-  { image: require('../../assets/images/subjects/german.png'), name: 'اللغة الالمانية' },
-  { image: require('../../assets/images/subjects/italy.png'), name: 'اللغة الايطالية' },
-  { image: require('../../assets/images/subjects/spanish.png'), name: 'اللغة الاسبانية' },
-  { image: require('../../assets/images/subjects/calculating.png'), name: 'الرياضيات' },
-  { image: require('../../assets/images/subjects/physics.png'), name: 'الفيزياء' },
-  { image: require('../../assets/images/subjects/chemistry.png'), name: 'الكيمياء' },
-  { image: require('../../assets/images/subjects/biology.png'), name: 'الاحياء' },
-  { image: require('../../assets/images/subjects/compSci.png'), name: 'علوم متكاملة' },
-  { image: require('../../assets/images/subjects/geology.png'), name: 'الجيولوجيا' },
-  { image: require('../../assets/images/subjects/history.png'), name: 'التاريخ' },
-  { image: require('../../assets/images/subjects/geography.png'), name: 'الجغرافيا' },
-  { image: require('../../assets/images/subjects/psychology.png'), name: 'الفلسفة' },
-  { image: require('../../assets/images/subjects/philosophy.png'), name: 'علم النفس' },
+const allSubjects = [
+  { image: require('../../assets/images/subjects/arabic.png'), name: 'اللغة العربية', key: 'arabic' },
+  { image: require('../../assets/images/subjects/english.png'), name: 'اللغة الانجليزية', key: 'english' },
+  { image: require('../../assets/images/subjects/french.png'), name: 'اللغة الفرنسية', key: 'french' },
+  { image: require('../../assets/images/subjects/german.png'), name: 'اللغة الالمانية', key: 'german' },
+  { image: require('../../assets/images/subjects/italy.png'), name: 'اللغة الايطالية', key: 'italy' },
+  { image: require('../../assets/images/subjects/spanish.png'), name: 'اللغة الاسبانية', key: 'spanish' },
+  { image: require('../../assets/images/subjects/calculating.png'), name: 'الرياضيات', key: 'math' },
+  { image: require('../../assets/images/subjects/physics.png'), name: 'الفيزياء', key: 'physics' },
+  { image: require('../../assets/images/subjects/chemistry.png'), name: 'الكيمياء', key: 'chemistry' },
+  { image: require('../../assets/images/subjects/biology.png'), name: 'الاحياء', key: 'biology' },
+  { image: require('../../assets/images/subjects/compSci.png'), name: 'علوم متكاملة', key: 'integratedScience' },
+  { image: require('../../assets/images/subjects/geology.png'), name: 'الجيولوجيا', key: 'geology' },
+  { image: require('../../assets/images/subjects/history.png'), name: 'التاريخ', key: 'history' },
+  { image: require('../../assets/images/subjects/geography.png'), name: 'الجغرافيا', key: 'geography' },
+  { image: require('../../assets/images/subjects/psychology.png'), name: 'علم النفس', key: 'psychology' },
+  { image: require('../../assets/images/subjects/philosophy.png'), name: 'الفلسفة', key: 'philosophy' },
 ]
 
+const getSubjectsForGrade = (grade: string, major?: string) => {
+  // المواد الأساسية للصفوف الإعدادية
+  const preparatorySubjects = ['arabic', 'english', 'math', 'history', 'geography']
+
+  // المواد الأساسية للصفوف الثانوية
+  const secondaryBaseSubjects = ['arabic', 'english', 'french', 'german', 'italy', 'spanish']
+
+  // الصفوف الإعدادية (7-9)
+  if (grade === 'الصف الاول الاعدادي' || grade === 'الصف الثاني الاعدادي' || grade === 'الصف الثالث الاعدادي') {
+    return allSubjects.filter(subject => preparatorySubjects.includes(subject.key))
+  }
+
+  // الصف الأول الثانوي
+  if (grade === 'الصف الاول الثانوي') {
+    return allSubjects.filter(subject =>
+      [...secondaryBaseSubjects, 'integratedScience', 'history', 'geography', 'psychology', 'math'].includes(subject.key)
+    )
+  }
+
+  // الصف الثاني الثانوي
+  if (grade === 'الصف الثاني الثانوي') {
+    const subjects = [...secondaryBaseSubjects, 'math']
+
+    if (major === 'علمي') {
+      subjects.push('integratedScience')
+    } else if (major === 'ادبي') {
+      subjects.push('history', 'geography', 'philosophy', 'psychology')
+    }
+
+    return allSubjects.filter(subject => subjects.includes(subject.key))
+  }
+
+  // الصف الثالث الثانوي
+  if (grade === 'الصف الثالث الثانوي') {
+    const subjects = [...secondaryBaseSubjects]
+
+    if (major === 'علمي رياضة') {
+      subjects.push('physics', 'chemistry', 'math')
+    } else if (major === 'علمي علوم') {
+      subjects.push('physics', 'chemistry', 'biology', 'geology')
+    } else if (major === 'ادبي') {
+      subjects.push('history', 'geography', 'philosophy', 'psychology')
+    }
+
+    return allSubjects.filter(subject => subjects.includes(subject.key))
+  }
+
+  return allSubjects
+}
+
 export default function Courses() {
+  // const { updates } = useRealtime()
+  // const courses = updates.courses
   const [user, setUser] = useState<user>()
   const { users, lessons } = useDataContext()
 
@@ -55,7 +108,7 @@ export default function Courses() {
   } else {
 
     const filteredLessons = lessons?.filter(lesson => lesson.grade === user?.grade).reverse()
-    filteredLessons?.reverse()
+    const subjects = getSubjectsForGrade(user.grade, user.major)
 
     const Exams = filteredLessons?.map(lesson => lesson.exam)
 
@@ -112,7 +165,7 @@ export default function Courses() {
             </View>
             {/* last Lessons */}
             <Text style={[ConstantStyles.Title1, { marginTop: 20 }]}>اخر المحاضرات</Text>
-            <View style={{ display: 'flex', flexDirection: 'column', direction: 'rtl', width: '100%', alignItems: 'center', justifyContent: 'center' , marginBottom: 80}}>
+            <View style={{ display: 'flex', flexDirection: 'column', direction: 'rtl', width: '100%', alignItems: 'center', justifyContent: 'center', marginBottom: 80 }}>
               {filteredLessons?.map((lesson, index) => {
                 return (
                   <LessonComponent key={index} lesson={lesson} user={user} />

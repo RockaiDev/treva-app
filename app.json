@@ -59,7 +59,6 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-video",
       "expo-font"
     ],
     "experiments": {

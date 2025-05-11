@@ -9,13 +9,14 @@ import LessonComponent from '@/components/elements/LessonComponent'
 import { LinearGradient } from 'expo-linear-gradient'
 import axios from 'axios'
 import Constants from 'expo-constants'
+// import { useRealtime } from '../../contexts/RealtimeContext'
 
 export default function Wallet() {
   const [user, setUser] = useState<user>()
+  // const { updates } = useRealtime()
+  // const walletData = updates.wallet
 
   const { lessons } = useDataContext()
-
-
 
   const fetchUser = async () => {
     const userExist = await AsyncStorage.getItem('user')
@@ -31,7 +32,6 @@ export default function Wallet() {
   if (!user) {
     return <Loading />
   } else {
-
     const TotalBillsCost = user.bills.reduce((acc, bill) => acc + +bill.cost, 0)
 
     const lessonMeanet = (lesson: any) => {
@@ -43,77 +43,77 @@ export default function Wallet() {
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-      const hasSubscribedBefore = user.bills.some(bill => 
-      bill.method === 'الاشتراك الشهري' && new Date(bill.date) > oneMonthAgo
+      const hasSubscribedBefore = user.bills.some(bill =>
+        bill.method === 'الاشتراك الشهري' && new Date(bill.date) > oneMonthAgo
       );
 
       if (hasSubscribedBefore) {
-      Alert.alert('خطأ', 'لقد اشتركت بالفعل في الاشتراك الشهري خلال الشهر الحالي. لا يمكنك الاشتراك مرة أخرى حتى مرور شهر كامل.');
-      return;
+        Alert.alert('خطأ', 'لقد اشتركت بالفعل في الاشتراك الشهري خلال الشهر الحالي. لا يمكنك الاشتراك مرة أخرى حتى مرور شهر كامل.');
+        return;
       }
 
       if (user.type === 'TrevaGo') {
-      Alert.alert("الاشتراك الشهري", 'هل تريد الاشتراك الشهري لطلاب المعهد فقط ب 400 جنيه', [
-        {
-        text: 'نعم',
-        onPress: async () => {
-          if (user.points >= 400) {
-          const bill = {
-            method: 'الاشتراك الشهري',
-            cost: 400,
-            date: new Date().getTime(),
-            code: `${new Date().getTime()}`
-          };
-          user.bills.push(bill);
-          user.logs.push(`تم دفع ${bill.cost} جنيه للاشتراك الشهري`);
-          user.points -= 400;
-          user.type = 'TrevaIn';
-          setUser(user);
-          await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, user).then(res => {
-            AsyncStorage.setItem('user', JSON.stringify(user));
-            Alert.alert('تم', 'تم الاشتراك بنجاح');
-          });
-          } else {
-          Alert.alert('خطأ', 'رصيدك غير كافي');
+        Alert.alert("الاشتراك الشهري", 'هل تريد الاشتراك الشهري لطلاب المعهد فقط ب 400 جنيه', [
+          {
+            text: 'نعم',
+            onPress: async () => {
+              if (user.points >= 400) {
+                const bill = {
+                  method: 'الاشتراك الشهري',
+                  cost: 400,
+                  date: new Date().getTime(),
+                  code: `${new Date().getTime()}`
+                };
+                user.bills.push(bill);
+                user.logs.push(`تم دفع ${bill.cost} جنيه للاشتراك الشهري`);
+                user.points -= 400;
+                user.type = 'TrevaIn';
+                setUser(user);
+                await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, user).then(res => {
+                  AsyncStorage.setItem('user', JSON.stringify(user));
+                  Alert.alert('تم', 'تم الاشتراك بنجاح');
+                });
+              } else {
+                Alert.alert('خطأ', 'رصيدك غير كافي');
+              }
+            }
+          },
+          {
+            text: 'لا',
+            onPress: () => { }
           }
-        }
-        },
-        {
-        text: 'لا',
-        onPress: () => { }
-        }
-      ]);
+        ]);
       } else {
-      Alert.alert("الاشتراك الشهري", 'هل تريد الاشتراك الشهري ب 400 جنيه', [
-        {
-        text: 'نعم',
-        onPress: async () => {
-          if (user.points >= 400) {
-          const bill = {
-            method: 'الاشتراك الشهري',
-            cost: 400,
-            date: new Date().getTime(),
-            code: `${new Date().getTime()}`
-          };
-          user.bills.push(bill);
-          user.logs.push(`تم دفع ${bill.cost} جنيه للاشتراك الشهري`);
-          user.points -= 400;
-          setUser(user);
-          console.log(user);
-          await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, user).then(res => {
-            AsyncStorage.setItem('user', JSON.stringify(user));
-            Alert.alert('تم', 'تم الاشتراك بنجاح');
-          });
-          } else {
-          Alert.alert('خطأ', 'رصيدك غير كافي');
+        Alert.alert("الاشتراك الشهري", 'هل تريد الاشتراك الشهري ب 400 جنيه', [
+          {
+            text: 'نعم',
+            onPress: async () => {
+              if (user.points >= 400) {
+                const bill = {
+                  method: 'الاشتراك الشهري',
+                  cost: 400,
+                  date: new Date().getTime(),
+                  code: `${new Date().getTime()}`
+                };
+                user.bills.push(bill);
+                user.logs.push(`تم دفع ${bill.cost} جنيه للاشتراك الشهري`);
+                user.points -= 400;
+                setUser(user);
+                console.log(user);
+                await axios.post(`${Constants.expoConfig?.extra?.API_URL}/users/updateUser`, user).then(res => {
+                  AsyncStorage.setItem('user', JSON.stringify(user));
+                  Alert.alert('تم', 'تم الاشتراك بنجاح');
+                });
+              } else {
+                Alert.alert('خطأ', 'رصيدك غير كافي');
+              }
+            }
+          },
+          {
+            text: 'لا',
+            onPress: () => { }
           }
-        }
-        },
-        {
-        text: 'لا',
-        onPress: () => { }
-        }
-      ]);
+        ]);
       }
     };
 
@@ -262,10 +262,10 @@ export default function Wallet() {
                     borderRadius: 10,
                   }}>
                     <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%' }}>
-                        <Text style={[ConstantStyles.Title2, { fontSize: 20 }]}>{bill.method}</Text>
+                      <Text style={[ConstantStyles.Title2, { fontSize: 20 }]}>{bill.method}</Text>
                       <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                      <Text style={[ConstantStyles.Title3, { fontSize: 20 }]}>{(bill.cost).toLocaleString()} ج.م</Text>
-                      <Text style={[ConstantStyles.normalText, { fontSize: 16, color: Colors.mainColor, textAlign: 'left' }]}>{typeof (bill.date) === 'number' ? new Date(bill.date).toLocaleDateString() : bill.date}</Text>
+                        <Text style={[ConstantStyles.Title3, { fontSize: 20 }]}>{(bill.cost).toLocaleString()} ج.م</Text>
+                        <Text style={[ConstantStyles.normalText, { fontSize: 16, color: Colors.mainColor, textAlign: 'left' }]}>{typeof (bill.date) === 'number' ? new Date(bill.date).toLocaleDateString() : bill.date}</Text>
                       </View>
                     </View>
                   </View>
